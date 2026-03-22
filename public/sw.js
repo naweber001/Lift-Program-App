@@ -1,10 +1,11 @@
 const CACHE_NAME = 'lift-fitness-v1';
+const BASE = '/Lift-Program-App/';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll([
-      '/Lift-Program-App/',
-      '/Lift-Program-App/index.html',
+      BASE,
+      BASE + 'index.html',
     ]))
   );
   self.skipWaiting();
@@ -20,13 +21,31 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  const { request } = event;
+
+  // For navigation requests, try network first then cache
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          return response;
+        })
+        .catch(() => caches.match(BASE + 'index.html'))
+    );
+    return;
+  }
+
+  // For assets (JS, CSS, images), use stale-while-revalidate
   event.respondWith(
-    fetch(event.request)
-      .then((response) => {
+    caches.match(request).then((cached) => {
+      const networkFetch = fetch(request).then((response) => {
         const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
         return response;
-      })
-      .catch(() => caches.match(event.request))
+      });
+      return cached || networkFetch;
+    })
   );
 });

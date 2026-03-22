@@ -175,8 +175,8 @@ function App() {
     <div style={{ fontFamily:"'DM Sans','SF Pro Display',-apple-system,sans-serif", background:C.bg, minHeight:"100vh", color:C.text, maxWidth:480, margin:"0 auto", WebkitTapHighlightColor:"transparent" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&display=swap');
-        *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent}
-        html{background:${C.bg}} ::-webkit-scrollbar{display:none}
+        *{box-sizing:border-box;margin:0;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+        html{background:${C.bg};overscroll-behavior:none} ::-webkit-scrollbar{display:none}
         input::placeholder{color:${C.textMuted}} input{font-size:16px!important} select{font-size:16px!important} textarea::placeholder{color:${C.textMuted}}
         @keyframes slideInLeft { from { transform:translateX(100%); opacity:0.5; } to { transform:translateX(0); opacity:1; } }
         @keyframes slideInRight { from { transform:translateX(-100%); opacity:0.5; } to { transform:translateX(0); opacity:1; } }
@@ -187,6 +187,7 @@ function App() {
       `}</style>
 
       {/* Header */}
+      <div style={{ padding:"env(safe-area-inset-top, 0px) 20px 0", background: theme === "light" ? C.accent : C.bg }}/>
       <div style={{ padding:"12px 20px", borderBottom:`1px solid ${C.border}`, position:"sticky", top:0, zIndex:10, background: theme === "light" ? C.accent : C.bg, overflow:"hidden" }}>
         <div style={{ position:"absolute", top:0, left:0, right:0, bottom:0, background: theme === "light" ? "linear-gradient(135deg, rgba(0,0,0,0.15) 0%, transparent 50%)" : `linear-gradient(135deg, transparent 20%, ${C.accent})`, opacity: theme === "light" ? 1 : 0.12, pointerEvents:"none" }}/>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", position:"relative" }}>
