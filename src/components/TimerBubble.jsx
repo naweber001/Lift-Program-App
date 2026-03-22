@@ -11,7 +11,7 @@ export function TimerBubble({ timerState, onAction }) {
   if (!expanded) {
     return (
       <button onClick={()=>onAction("toggleExpand")} style={{
-        position:"fixed", bottom:70, right:16, maxWidth:480,
+        position:"fixed", bottom:"calc(70px + env(safe-area-inset-bottom, 10px))", right:16, maxWidth:480,
         width:56, height:56, borderRadius:28, border:"none", cursor:"pointer",
         background: isOvertime ? C.danger : running ? C.accent : C.surface,
         color: running ? "#fff" : C.accent,
@@ -32,7 +32,7 @@ export function TimerBubble({ timerState, onAction }) {
 
   return (
     <div style={{
-      position:"fixed", bottom:70, left:16, right:16, maxWidth:448, margin:"0 auto",
+      position:"fixed", bottom:"calc(70px + env(safe-area-inset-bottom, 10px))", left:16, right:16, maxWidth:448, margin:"0 auto",
       background:C.surface, borderRadius:20, padding:"16px 20px",
       boxShadow: isOvertime ? `0 8px 32px ${C.danger}30` : "0 8px 32px rgba(0,0,0,0.4)", zIndex:15,
       border: isOvertime ? `1.5px solid ${C.danger}` : `1px solid ${C.border}`,

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useImperativeHandle, forwardRef } from 'react';
 import { C } from '../theme.js';
 import { getInp, Badge, NotesToggle, Sheet, lbl } from './UI.jsx';
 import { X, Chevron, ChevDown, Plus, Trash, Check, StarIco, LinkIco } from './Icons.jsx';
 import { MUSCLE_GROUPS, CARDIO_GROUPS, mColor } from '../constants.js';
 import { ProgramExerciseList } from './ProgramExerciseList.jsx';
 
-export const ProgramsModal = React.memo(function ProgramsModal({ dispatch, programs, currentWeek, inline, favorites }) {
+export const ProgramsModal = React.memo(forwardRef(function ProgramsModal({ dispatch, programs, currentWeek, inline, favorites }, ref) {
   const [view, setView] = useState("list");
   const [selProg, setSelProg] = useState(null);
   const [sortBy, setSortBy] = useState("default");
@@ -39,42 +39,34 @@ export const ProgramsModal = React.memo(function ProgramsModal({ dispatch, progr
   };
 
   const addEx = () => {
-    const nameEl = document.getElementById("ex-name");
-    const setsEl = document.getElementById("ex-sets");
-    const repsEl = document.getElementById("ex-reps");
-    const name = (nameEl?.value || "").trim();
+    const name = exN.trim();
     if(!name) return;
     const isC = CARDIO_GROUPS.has(exM);
-    const sets = setsEl?.value || "3";
-    const reps = repsEl?.value || "";
+    const sets = exS || "3";
+    const reps = exR || "";
     const updated = [...cpDays];
     updated[cpIdx] = { ...updated[cpIdx], exercises:[...updated[cpIdx].exercises, { name, muscle:exM, targetSets:isC?"1":sets, targetReps:reps }]};
     setCpDays(updated);
-    if (nameEl) nameEl.value = "";
-    if (setsEl) setsEl.value = "";
-    if (repsEl) repsEl.value = "";
+    setExN(""); setExS(""); setExR("");
+  };
+
+  const updateDayField = (idx, field, value) => {
+    const updated = [...cpDays];
+    updated[idx] = { ...updated[idx], [field]: value };
+    setCpDays(updated);
   };
 
   const saveProg = () => {
-    // Read current values from uncontrolled inputs
-    const nameVal = (document.getElementById("cp-name")?.value || cpName).trim();
-    const notesVal = document.getElementById("cp-notes")?.value || cpNotes;
-    // Read day names and notes from DOM
-    const finalDays = cpDays.map((d, i) => ({
-      ...d,
-      name: document.getElementById(`dn-${i}`)?.value || d.name,
-      notes: document.getElementById(`dnotes-${i}`)?.value || d.notes || "",
-    }));
-
-    if(!nameVal || finalDays.every(d=>d.exercises.length===0 && !d.isRest)) return;
+    const nameVal = cpName.trim();
+    if(!nameVal || cpDays.every(d=>d.exercises.length===0 && !d.isRest)) return;
     if (editingId) {
-      dispatch({ type:"UPDATE_PROGRAM", payload:{ id:editingId, name:nameVal, notes:notesVal, days:finalDays }});
-      const updated = { id:editingId, name:nameVal, notes:notesVal, days:finalDays };
+      dispatch({ type:"UPDATE_PROGRAM", payload:{ id:editingId, name:nameVal, notes:cpNotes, days:cpDays }});
+      const updated = { id:editingId, name:nameVal, notes:cpNotes, days:cpDays };
       setSelProg(updated);
       setEditingId(null);
       setView("detail");
     } else {
-      dispatch({ type:"ADD_PROGRAM", payload:{ id:`c_${Date.now()}`, name:nameVal, notes:notesVal, days:finalDays }});
+      dispatch({ type:"ADD_PROGRAM", payload:{ id:`c_${crypto.randomUUID()}`, name:nameVal, notes:cpNotes, days:cpDays }});
       setView("list");
     }
     setCpName(""); setCpNotes(""); setCpDays([{name:"Day 1",exercises:[]}]); setCpIdx(0);
@@ -85,6 +77,8 @@ export const ProgramsModal = React.memo(function ProgramsModal({ dispatch, progr
     setExN(""); setExM("Chest"); setExS(""); setExR("");
     setView("create");
   };
+
+  useImperativeHandle(ref, () => ({ createProgram: resetAndCreate }));
 
   const Wrapper = inline ? ({children}) => <>{children}</> : ({children}) => <Sheet onClose={()=>dispatch({type:"CLOSE_MODAL"})}>{children}</Sheet>;
 
@@ -170,10 +164,10 @@ export const ProgramsModal = React.memo(function ProgramsModal({ dispatch, progr
             });
           })()}
         </div>
-        <button onClick={resetAndCreate} style={{
+        {!inline && <button onClick={resetAndCreate} style={{
           width:"100%", padding:"16px", borderRadius:14, marginTop:12, border:`1.5px dashed ${C.border}`, background:"transparent",
           color:C.textDim, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", justifyContent:"center", gap:6,
-        }}><Plus s={14}/> Create Program</button>
+        }}><Plus s={14}/> Create Program</button>}
       </>}
 
       {/* DETAIL */}
@@ -251,8 +245,8 @@ export const ProgramsModal = React.memo(function ProgramsModal({ dispatch, progr
         <button onClick={()=>{ if(editingId && selProg) { setEditingId(null); setView("detail"); } else { setView("list"); } }} style={{ background:"none",border:"none",color:C.accent,cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:600,padding:0,marginBottom:16,display:"flex",alignItems:"center",gap:4 }}><Chevron dir="l"/> Back</button>
         <h3 style={{ margin:"0 0 16px", fontSize:20, fontWeight:800, color:C.text }}>{editingId ? "Edit Program" : "Create Program"}</h3>
         <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-          <div><label style={lbl()}>Program Name</label><input id="cp-name" key={`pn-${editingId||"new"}`} style={getInp()} placeholder="e.g. Upper / Lower" defaultValue={cpName}/></div>
-          <div><label style={lbl()}>Program Notes (optional)</label><textarea id="cp-notes" key={`pnotes-${editingId||"new"}`} style={{ ...getInp(), minHeight:60, resize:"vertical", fontFamily:"inherit", lineHeight:1.4 }} placeholder="Progression rules, rest times, general guidelines..." defaultValue={cpNotes}/></div>
+          <div><label style={lbl()}>Program Name</label><input style={getInp()} placeholder="e.g. Upper / Lower" value={cpName} onChange={e=>setCpName(e.target.value)}/></div>
+          <div><label style={lbl()}>Program Notes (optional)</label><textarea style={{ ...getInp(), minHeight:60, resize:"vertical", fontFamily:"inherit", lineHeight:1.4 }} placeholder="Progression rules, rest times, general guidelines..." value={cpNotes} onChange={e=>setCpNotes(e.target.value)}/></div>
           <div>
             <label style={lbl()}>Days</label>
             <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:10 }}>
@@ -272,7 +266,7 @@ export const ProgramsModal = React.memo(function ProgramsModal({ dispatch, progr
             {cpDays[cpIdx] && (
               <div key={`day-editor-${cpIdx}`} style={{ background:C.card, borderRadius:14, padding:16, border:`1px solid ${C.border}` }}>
                 <div style={{ display:"flex", gap:8, alignItems:"center", marginBottom:12 }}>
-                  <input id={`dn-${cpIdx}`} key={`dn-${cpIdx}`} style={{ ...getInp(), fontSize:14, padding:"10px 12px" }} defaultValue={cpDays[cpIdx].name} placeholder="Day name" autoComplete="off"/>
+                  <input style={{ ...getInp(), fontSize:14, padding:"10px 12px" }} value={cpDays[cpIdx].name} onChange={e=>updateDayField(cpIdx,"name",e.target.value)} placeholder="Day name" autoComplete="off"/>
                   {cpDays.length > 1 && <button onClick={()=>{const u=cpDays.filter((_,i)=>i!==cpIdx);setCpDays(u);if(cpIdx>=u.length)setCpIdx(u.length-1);}} style={{ background:"none",border:"none",color:C.danger,cursor:"pointer",padding:6,display:"flex",flexShrink:0 }}><Trash s={14}/></button>}
                 </div>
 
@@ -290,9 +284,10 @@ export const ProgramsModal = React.memo(function ProgramsModal({ dispatch, progr
 
                 {/* Day notes */}
                 <div style={{ marginBottom:12 }}>
-                  <textarea id={`dnotes-${cpIdx}`} key={`dnotes-${cpIdx}`} style={{ ...getInp(), minHeight:50, resize:"vertical", fontFamily:"inherit", lineHeight:1.4, fontSize:13, padding:"10px 12px" }}
+                  <textarea style={{ ...getInp(), minHeight:50, resize:"vertical", fontFamily:"inherit", lineHeight:1.4, fontSize:13, padding:"10px 12px" }}
                     placeholder="Day notes — set/rep details, supersets, rest times..."
-                    defaultValue={cpDays[cpIdx].notes || ""}
+                    value={cpDays[cpIdx].notes || ""}
+                    onChange={e=>updateDayField(cpIdx,"notes",e.target.value)}
                   />
                 </div>
 
@@ -304,7 +299,7 @@ export const ProgramsModal = React.memo(function ProgramsModal({ dispatch, progr
                     />
                   )}
                   <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                    <input id="ex-name" style={getInp()} placeholder="Exercise name" defaultValue=""/>
+                    <input style={getInp()} placeholder="Exercise name" value={exN} onChange={e=>setExN(e.target.value)}/>
                     <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                       {MUSCLE_GROUPS.map(m => (
                         <button key={m} onClick={()=>setExM(m)} style={{
@@ -317,8 +312,8 @@ export const ProgramsModal = React.memo(function ProgramsModal({ dispatch, progr
                     </div>
                     {!CARDIO_GROUPS.has(exM) ? (
                       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
-                        <input id="ex-sets" style={getInp()} placeholder="Sets" inputMode="numeric" defaultValue=""/>
-                        <input id="ex-reps" style={getInp()} placeholder="Reps" inputMode="numeric" defaultValue=""/>
+                        <input style={getInp()} placeholder="Sets" inputMode="numeric" value={exS} onChange={e=>setExS(e.target.value)}/>
+                        <input style={getInp()} placeholder="Reps" inputMode="numeric" value={exR} onChange={e=>setExR(e.target.value)}/>
                       </div>
                     ) : null}
                     <button onClick={addEx} style={{ padding:"12px", borderRadius:10, border:`1px solid ${C.border}`, background:C.surface, color:C.text, fontSize:14, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>+ Add Exercise</button>
@@ -337,4 +332,4 @@ export const ProgramsModal = React.memo(function ProgramsModal({ dispatch, progr
       </>}
     </Wrapper>
   );
-});
+}));

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { C } from '../theme.js';
 import { getInp, Badge } from './UI.jsx';
 import { ChevDown, Plus, X, ListIco, ArrowUp, ArrowDown, Check, DumbbellTab, NutritionIco } from './Icons.jsx';
@@ -8,7 +8,7 @@ import { ExerciseLog } from './ExerciseLog.jsx';
 import { SupersetLog } from './SupersetLog.jsx';
 import { DayNutrition } from './DayNutrition.jsx';
 
-export function DayRow({ dayLbl, date, dateKey, workout, programDayName, activeProgramName, isToday, isExpanded, dispatch, hasPrograms, allWorkouts, nutrition, nutritionFavs, macroGoals }) {
+export const DayRow = React.memo(function DayRow({ dayLbl, date, dateKey, workout, programDayName, activeProgramName, isToday, isExpanded, dispatch, hasPrograms, allWorkouts, nutrition, nutritionFavs, macroGoals }) {
   const exercises = workout?.exercises || [];
   const isRest = workout?.isRest || false;
   const totalSets = exercises.reduce((a, e) => a + e.sets.length, 0);
@@ -23,23 +23,27 @@ export function DayRow({ dayLbl, date, dateKey, workout, programDayName, activeP
   const [notesOpen, setNotesOpen] = useState(false);
 
   // Compute last-time weights for each exercise name
-  const lastWeights = {};
-  if (allWorkouts) {
-    const sortedDates = Object.keys(allWorkouts).filter(dk => dk < dateKey).sort().reverse();
-    for (const dk of sortedDates) {
-      const day = allWorkouts[dk];
-      if (!day?.exercises) continue;
-      for (const ex of day.exercises) {
-        if (lastWeights[ex.name]) continue;
-        const done = ex.sets?.filter(st => st.done && st.weight);
-        if (done && done.length > 0) {
-          const bestSet = done.reduce((best, st) => (parseFloat(st.weight)||0) > (parseFloat(best.weight)||0) ? st : best, done[0]);
-          lastWeights[ex.name] = { weight: bestSet.weight, reps: bestSet.reps };
+  const exerciseNames = exercises.map(e => e.name).join(",");
+  const lastWeights = useMemo(() => {
+    const result = {};
+    if (allWorkouts) {
+      const sortedDates = Object.keys(allWorkouts).filter(dk => dk < dateKey).sort().reverse();
+      for (const dk of sortedDates) {
+        const day = allWorkouts[dk];
+        if (!day?.exercises) continue;
+        for (const ex of day.exercises) {
+          if (result[ex.name]) continue;
+          const done = ex.sets?.filter(st => st.done && st.weight);
+          if (done && done.length > 0) {
+            const bestSet = done.reduce((best, st) => (parseFloat(st.weight)||0) > (parseFloat(best.weight)||0) ? st : best, done[0]);
+            result[ex.name] = { weight: bestSet.weight, reps: bestSet.reps };
+          }
         }
+        if (exercises.every(ex => result[ex.name])) break;
       }
-      if (exercises.every(ex => lastWeights[ex.name])) break; // found all, stop searching
     }
-  }
+    return result;
+  }, [allWorkouts, dateKey, exerciseNames]);
 
   return (
     <div style={{
@@ -205,4 +209,4 @@ export function DayRow({ dayLbl, date, dateKey, workout, programDayName, activeP
       )}
     </div>
   );
-}
+});

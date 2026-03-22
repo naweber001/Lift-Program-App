@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { C, U } from '../theme.js';
 import { getInp, Badge } from './UI.jsx';
 import { Chevron, TrophyIco } from './Icons.jsx';
 
-export function HistoryTab({ workouts, units }) {
+export const HistoryTab = React.memo(function HistoryTab({ workouts, units }) {
   const [search, setSearch] = useState("");
   const [selectedEx, setSelectedEx] = useState(null);
   const [sortBy, setSortBy] = useState("sessions");
@@ -11,36 +11,39 @@ export function HistoryTab({ workouts, units }) {
   const [repFilter, setRepFilter] = useState("All"); // "All" or a number string like "5"
 
   // Build exercise stats from all workouts
-  const exStats = {};
-  Object.entries(workouts).forEach(([dateKey, day]) => {
-    if (!day.exercises) return;
-    day.exercises.forEach(ex => {
-      if (!ex.sets || ex.isCardio) return;
-      const completedSets = ex.sets.filter(s => s.done);
-      if (completedSets.length === 0) return;
+  const exStats = useMemo(() => {
+    const stats = {};
+    Object.entries(workouts).forEach(([dateKey, day]) => {
+      if (!day.exercises) return;
+      day.exercises.forEach(ex => {
+        if (!ex.sets || ex.isCardio) return;
+        const completedSets = ex.sets.filter(s => s.done);
+        if (completedSets.length === 0) return;
 
-      if (!exStats[ex.name]) {
-        exStats[ex.name] = { muscle: ex.muscle, bestWeight: 0, bestReps: 0, bestVolume: 0, bestSet: null, totalSets: 0, sessions: [], pr: null };
-      }
-      const stat = exStats[ex.name];
+        if (!stats[ex.name]) {
+          stats[ex.name] = { muscle: ex.muscle, bestWeight: 0, bestReps: 0, bestVolume: 0, bestSet: null, totalSets: 0, sessions: [], pr: null };
+        }
+        const stat = stats[ex.name];
 
-      const sessionSets = [];
-      completedSets.forEach(s => {
-        const w = parseFloat(s.weight) || 0;
-        const r = parseInt(s.reps) || 0;
-        const vol = w * r;
-        sessionSets.push({ weight: w, reps: r, volume: vol });
+        const sessionSets = [];
+        completedSets.forEach(s => {
+          const w = parseFloat(s.weight) || 0;
+          const r = parseInt(s.reps) || 0;
+          const vol = w * r;
+          sessionSets.push({ weight: w, reps: r, volume: vol });
 
-        stat.totalSets++;
-        if (w > stat.bestWeight) { stat.bestWeight = w; stat.pr = { weight: w, reps: r, date: dateKey }; }
-        if (w === stat.bestWeight && r > (stat.pr?.reps || 0)) { stat.pr = { weight: w, reps: r, date: dateKey }; }
-        if (r > stat.bestReps) stat.bestReps = r;
-        if (vol > stat.bestVolume) { stat.bestVolume = vol; stat.bestSet = { weight: w, reps: r, date: dateKey }; }
+          stat.totalSets++;
+          if (w > stat.bestWeight) { stat.bestWeight = w; stat.pr = { weight: w, reps: r, date: dateKey }; }
+          if (w === stat.bestWeight && r > (stat.pr?.reps || 0)) { stat.pr = { weight: w, reps: r, date: dateKey }; }
+          if (r > stat.bestReps) stat.bestReps = r;
+          if (vol > stat.bestVolume) { stat.bestVolume = vol; stat.bestSet = { weight: w, reps: r, date: dateKey }; }
+        });
+
+        stat.sessions.push({ date: dateKey, sets: sessionSets });
       });
-
-      stat.sessions.push({ date: dateKey, sets: sessionSets });
     });
-  });
+    return stats;
+  }, [workouts]);
 
   // Sort: most sessions first, then alphabetical
   const exerciseList = Object.entries(exStats);
@@ -328,5 +331,4 @@ export function HistoryTab({ workouts, units }) {
       </div>
     </div>
   );
-}
-
+});

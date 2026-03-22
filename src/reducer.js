@@ -46,7 +46,6 @@ export function buildExercises(exercises, prevWorkouts) {
     });
   }
 
-  const base = Date.now();
   const exs = exercises.map((e, i) => {
     const numSets = parseInt(e.targetSets) || 3;
     const prev = lastWeights[e.name];
@@ -56,7 +55,7 @@ export function buildExercises(exercises, prevWorkouts) {
       return { weight: prevSet ? prevSet.weight : "", reps: "", done: false };
     });
     return {
-      id: base + i, name: e.name, muscle: e.muscle,
+      id: crypto.randomUUID(), name: e.name, muscle: e.muscle,
       targetSets: numSets, targetReps: e.targetReps || "",
       isCardio: CARDIO_GROUPS.has(e.muscle),
       sets,
@@ -140,7 +139,7 @@ export function reducer(s, a) {
     case "ADD_MEAL": {
       const { dateKey, mealName } = a.payload;
       const dayMeals = s.nutrition[dateKey]?.meals || [];
-      return { ...s, nutrition: { ...s.nutrition, [dateKey]: { meals: [...dayMeals, { id: Date.now(), name: mealName || "Meal", items: [] }] } } };
+      return { ...s, nutrition: { ...s.nutrition, [dateKey]: { meals: [...dayMeals, { id: crypto.randomUUID(), name: mealName || "Meal", items: [] }] } } };
     }
     case "DELETE_MEAL": {
       const { dateKey, mealId } = a.payload;
@@ -164,7 +163,7 @@ export function reducer(s, a) {
     case "ADD_FOOD_ITEM": {
       const { dateKey, mealId, item } = a.payload;
       const meals = (s.nutrition[dateKey]?.meals || []).map(m =>
-        m.id === mealId ? { ...m, items: [...(m.items || []), { ...item, id: Date.now() }] } : m
+        m.id === mealId ? { ...m, items: [...(m.items || []), { ...item, id: crypto.randomUUID() }] } : m
       );
       return { ...s, nutrition: { ...s.nutrition, [dateKey]: { meals } } };
     }
@@ -284,7 +283,7 @@ export function reducer(s, a) {
           // Deep copy exercises with weights pre-filled but sets unchecked
           const exs = prevDay.exercises.map(ex => ({
             ...ex,
-            id: Date.now() + Math.random(),
+            id: crypto.randomUUID(),
             sets: ex.sets.map(st => ({
               ...st,
               done: false,
@@ -313,7 +312,7 @@ export function reducer(s, a) {
       const fromProgram = exercise.fromProgram;
       const numSets = fromProgram ? (parseInt(exercise.targetSets) || 3) : 1;
       const ex = {
-        id: Date.now(), name: exercise.name, muscle: exercise.muscle,
+        id: crypto.randomUUID(), name: exercise.name, muscle: exercise.muscle,
         targetSets: parseInt(exercise.targetSets) || (fromProgram ? 3 : 0), targetReps: exercise.targetReps || "",
         isCardio: isC,
         sets: isC

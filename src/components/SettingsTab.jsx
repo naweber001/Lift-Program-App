@@ -31,6 +31,7 @@ export function SettingsTab({ s, d }) {
   const [importText, setImportText] = useState("");
   const [importMode, setImportMode] = useState(false);
   const [copyFeedback, setCopyFeedback] = useState(false);
+  const [importError, setImportError] = useState(null);
 
   const handleExport = () => {
     const data = JSON.stringify({ programs, schedules, workouts, theme, units, weekStart, restDefault, accentColor, logoChoice: s.logoChoice, appTitle: s.appTitle, favorites: s.favorites, nutrition: s.nutrition, nutritionFavs: s.nutritionFavs, macroGoals: s.macroGoals, timerAutoStart: s.timerAutoStart });
@@ -39,14 +40,19 @@ export function SettingsTab({ s, d }) {
   };
 
   const handleImport = () => {
+    setImportError(null);
     try {
       const data = JSON.parse(importText.trim());
       if (data.programs || data.workouts) {
         d({ type: "IMPORT_DATA", payload: data });
         setImportText("");
         setImportMode(false);
+      } else {
+        setImportError("Invalid backup: no programs or workouts found.");
       }
-    } catch (err) { console.error("Import failed:", err); }
+    } catch (err) {
+      setImportError("Invalid JSON — make sure you copied the full backup text.");
+    }
   };
 
   return (
@@ -233,9 +239,10 @@ export function SettingsTab({ s, d }) {
           <div style={{ background:C.card, borderRadius:10, border:`1px solid ${C.border}`, padding:10 }}>
             <div style={{ fontSize:10, fontWeight:600, color:C.textMuted, marginBottom:6 }}>Paste your backup data:</div>
             <textarea value={importText} onChange={e => setImportText(e.target.value)} placeholder="Paste exported data here..." style={{ ...getInp(), fontSize:10, minHeight:80, resize:"vertical", fontFamily:"monospace", lineHeight:1.3 }} />
+            {importError && <div style={{ fontSize:11, fontWeight:600, color:"#ef4444", marginTop:6, padding:"6px 8px", background:"#ef444415", borderRadius:6 }}>{importError}</div>}
             <div style={{ display:"flex", gap:6, marginTop:6 }}>
               <button onClick={handleImport} disabled={!importText.trim()} style={{ flex:1, padding:"8px", borderRadius:6, border:"none", background: importText.trim() ? C.accent : C.border, color:"#fff", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Import Data</button>
-              <button onClick={() => { setImportMode(false); setImportText(""); }} style={{ padding:"8px 12px", borderRadius:6, border:`1px solid ${C.border}`, background:"transparent", color:C.textMuted, fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Cancel</button>
+              <button onClick={() => { setImportMode(false); setImportText(""); setImportError(null); }} style={{ padding:"8px 12px", borderRadius:6, border:`1px solid ${C.border}`, background:"transparent", color:C.textMuted, fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Cancel</button>
             </div>
           </div>
         )}
