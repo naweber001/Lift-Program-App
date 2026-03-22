@@ -7,10 +7,35 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="LIFT Fitness">
   <meta name="theme-color" content="#0a0a0f">
+  <link rel="manifest" href="/Lift-Program-App/manifest.json">
+  <link rel="apple-touch-icon" href="/Lift-Program-App/apple-touch-icon.png">
+
+  <!-- iOS splash screens -->
+  <link rel="apple-touch-startup-image" media="(device-width:390px) and (device-height:844px) and (-webkit-device-pixel-ratio:3)" href="/Lift-Program-App/splash-iphone-13.svg">
+  <link rel="apple-touch-startup-image" media="(device-width:393px) and (device-height:852px) and (-webkit-device-pixel-ratio:3)" href="/Lift-Program-App/splash-iphone-14pro.svg">
+  <link rel="apple-touch-startup-image" media="(device-width:430px) and (device-height:932px) and (-webkit-device-pixel-ratio:3)" href="/Lift-Program-App/splash-iphone-14promax.svg">
+  <link rel="apple-touch-startup-image" media="(device-width:428px) and (device-height:926px) and (-webkit-device-pixel-ratio:3)" href="/Lift-Program-App/splash-iphone-12promax.svg">
+  <link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:667px) and (-webkit-device-pixel-ratio:2)" href="/Lift-Program-App/splash-iphone-8.svg">
+  <link rel="apple-touch-startup-image" media="(device-width:375px) and (device-height:812px) and (-webkit-device-pixel-ratio:3)" href="/Lift-Program-App/splash-iphone-x.svg">
+
   <title>LIFT Fitness</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #0a0a0f; overflow-x: hidden; }
+    body {
+      background: #0a0a0f;
+      overflow-x: hidden;
+      /* Prevent pull-to-refresh and overscroll bounce */
+      overscroll-behavior-y: contain;
+      /* Prevent text selection on UI elements */
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    /* Allow text selection in inputs and textareas */
+    input, textarea { -webkit-user-select: text; user-select: text; }
+    /* Prevent iOS callout/context menu on long press */
+    a, button, img { -webkit-touch-callout: none; }
+    /* Smooth momentum scrolling */
+    * { -webkit-overflow-scrolling: touch; }
     #root { max-width: 480px; margin: 0 auto; min-height: 100vh; min-height: 100dvh; }
   </style>
 </head>
