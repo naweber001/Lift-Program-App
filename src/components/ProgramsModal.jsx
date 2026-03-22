@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { C } from '../theme.js';
 import { getInp, Badge, NotesToggle, Sheet, lbl } from './UI.jsx';
-import { Chevron, ChevDown, X, Plus, Trash, Check, LinkIco, UnlinkIco, StarIco } from './Icons.jsx';
+import { X, Chevron, ChevDown, Plus, Trash, Check, StarIco, LinkIco } from './Icons.jsx';
 import { MUSCLE_GROUPS, CARDIO_GROUPS, mColor } from '../constants.js';
 import { ProgramExerciseList } from './ProgramExerciseList.jsx';
 
@@ -119,12 +119,12 @@ export const ProgramsModal = React.memo(function ProgramsModal({ dispatch, progr
           </div>
           {/* Sort */}
           <div style={{ display:"flex", gap:4, marginBottom:12 }}>
-            {[["default","Default"],["favorites","★ Favs"],["alpha","A-Z"],["days","By Days"]].map(([val,lbl]) => (
+            {[["default","Default"],["favorites","★ Favs"],["alpha","A-Z"],["days","By Days"]].map(([val,label]) => (
               <button key={val} onClick={()=>setSortBy(val)} style={{
                 padding:"6px 12px", borderRadius:8, fontSize:11, fontWeight:700, border:"none", cursor:"pointer",
                 fontFamily:"inherit", background: sortBy===val ? C.accentDim : C.card,
                 color: sortBy===val ? C.accent : C.textMuted, border: sortBy===val ? `1px solid ${C.accent}` : `1px solid ${C.border}`,
-              }}>{lbl}</button>
+              }}>{label}</button>
             ))}
           </div>
         </>}
