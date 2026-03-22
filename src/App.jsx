@@ -187,8 +187,8 @@ function App() {
       `}</style>
 
       {/* Header */}
-      <div style={{ padding:"12px 20px", borderBottom:`1px solid ${C.border}`, position:"sticky", top:0, zIndex:10, background: theme === "light" ? "#1e2a4a" : C.bg, overflow:"hidden" }}>
-        <div style={{ position:"absolute", top:0, left:0, right:0, bottom:0, background: theme === "light" ? "none" : `linear-gradient(135deg, transparent 20%, ${C.accent})`, opacity:0.12, pointerEvents:"none" }}/>
+      <div style={{ padding:"12px 20px", borderBottom:`1px solid ${C.border}`, position:"sticky", top:0, zIndex:10, background: theme === "light" ? C.accent : C.bg, overflow:"hidden" }}>
+        <div style={{ position:"absolute", top:0, left:0, right:0, bottom:0, background: theme === "light" ? "linear-gradient(135deg, rgba(0,0,0,0.15) 0%, transparent 50%)" : `linear-gradient(135deg, transparent 20%, ${C.accent})`, opacity: theme === "light" ? 1 : 0.12, pointerEvents:"none" }}/>
         <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", position:"relative" }}>
           <img src={LIFE_LOGO} alt="Logo" style={{ width:42, height:42, borderRadius:10, objectFit:"cover", boxShadow:`0 2px 8px rgba(0,0,0,0.3)` }}/>
           {tab === "workout" && (
