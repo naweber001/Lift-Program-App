@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { C } from '../theme.js';
 import { Sheet } from './UI.jsx';
-import { Chevron, ChevDown, X, Check, ArrowUp, ArrowDown } from './Icons.jsx';
+import { X, Chevron, Check, ArrowUp, ArrowDown } from './Icons.jsx';
 import { getDays, weekDates, localDateStr, weekLabel } from '../dateUtils.js';
 
 export function SetProgramModal({ dispatch, programs, currentWeek, workouts }) {
